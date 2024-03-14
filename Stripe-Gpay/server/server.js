@@ -1,26 +1,38 @@
-const express = require('express');
-const stripe = require('stripe')('sk_test_51Otv5ySAQiq57A2K1WSmG2mkt6fCdQZiIlnDlpJhfhxWN498WetVCR2nXgjiZj7WGOX1krm5oewojqp5goxrTeul00fRrrQNBu'); // Replace 'your_stripe_secret_key' with your actual Stripe secret key
+const express = require("express");
 const app = express();
-const PORT = 3001; // Port for your server
+const port = 3001;
 
-app.use(express.json());
+require('dotenv').config()
 
-app.post('/create-payment-intent', async (req, res) => {
+SECRET_KEY = "sk_test_51Otv5ySAQiq57A2KKOfixSbXiycdKoFO1ZxrriHNL1rKuiQMos9KP3BKGXurO6RUSGsfUeC1bPpyJTRF58EbNIiI00gXOLhNZW"
+
+const stripe = require("stripe")(SECRET_KEY);
+
+console.log(process.env.SECRET_KEY);
+
+app.post("/create-payment-intent", async (req, res) => {
     try {
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: 100, // Amount in cents (e.g., $10.00)
-            currency: 'inr',
-            payment_method_types: ['card'],
-            metadata: { integration_check: 'accept_a_payment' }, // Optional metadata
+            amount: Math.round(10 * 100),
+            currency: "INR",
+            payment_method_types: ["card"],
+            // automatic_payment_methods: {
+            //     enabled: true,
+            // },
+            metadata: { name: "Deep" }
         });
 
-        res.status(200).json({ clientSecret: paymentIntent.client_secret });
-    } catch (error) {
-        console.error('Error creating PaymentIntent:', error.message);
-        res.status(500).json({ error: 'Failed to create PaymentIntent' });
+        const clientSecret = paymentIntent.client_secret;
+
+        res.json({
+            clientSecret: clientSecret
+        });
+    } catch (err) {
+        console.log("Error:", err.message);
+        res.json({ error: err.message });
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+    console.log(`Listening at port ${port}`);
 });
